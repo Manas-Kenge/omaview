@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.manas-kenge.omaview",
+  "name": "Omaview",
+  "version": "1.0.0",
+  "author": "Manas-Kenge",
+  "license": "MIT",
+  "description": "A combined calendar, media, and timezone overview for Omarchy.",
+  "kinds": ["bar-widget"],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Omaview",
+    "description": "A combined calendar, media, and timezone overview for Omarchy.",
+    "category": "Time",
+    "allowMultiple": false,
+    "defaultSection": "center"
+  }
+}
