@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.manas-kenge.omaview",
   "name": "Omaview",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Manas-Kenge",
   "license": "MIT",
   "description": "A combined calendar, media, and timezone overview for Omarchy.",

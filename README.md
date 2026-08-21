@@ -6,7 +6,7 @@ MPRIS media controls, and selectable IANA timezones.
 This plugin is derived from Omarchy's built-in clock plugin and is intended for
 the Omarchy shell.
 
-![Omaview calendar, media, and timezone panel](screenshot.png)
+![Omaview calendar, media, and timezone panel](preview.png)
 
 ## Features
 
