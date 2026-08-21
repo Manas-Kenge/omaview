@@ -13,8 +13,20 @@ Item {
   readonly property color foreground: bar ? bar.foreground : Color.foreground
   readonly property string pluginPath: String(Qt.resolvedUrl("TimezoneSection.qml"))
     .replace(/^file:\/\//, "").replace(/\/TimezoneSection\.qml$/, "")
-  readonly property var configuredTimezones: clockPanel && clockPanel.settings
-    ? clockPanel.settings.timezones : []
+  // During a cold bar startup the nested panel can be created before its
+  // settings object is injected. The host widget already has the settings
+  // loaded from shell.json, so use it as the fallback instead of rendering
+  // an empty selection until the next live settings update.
+  readonly property var configuredTimezones: {
+    var panelSettings = clockPanel ? clockPanel.settings : null
+    if (panelSettings && panelSettings.timezones !== undefined)
+      return panelSettings.timezones
+
+    var host = clockPanel ? clockPanel.hostWidget : null
+    var hostSettings = host ? host.settings : null
+    return hostSettings && hostSettings.timezones !== undefined
+      ? hostSettings.timezones : []
+  }
   readonly property var timezones: Model.normalizeZones(configuredTimezones)
   property var zoneTimes: ({})
   property int epoch: Math.floor(clock.date.getTime() / 1000)
