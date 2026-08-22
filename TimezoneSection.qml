@@ -13,7 +13,6 @@ Item {
   readonly property color foreground: bar ? bar.foreground : Color.foreground
   readonly property string pluginPath: String(Qt.resolvedUrl("TimezoneSection.qml"))
     .replace(/^file:\/\//, "").replace(/\/TimezoneSection\.qml$/, "")
-  // Use the host's shell.json settings while the nested panel is initializing.
   readonly property var configuredTimezones: {
     var panelSettings = clockPanel ? clockPanel.settings : null
     if (panelSettings && panelSettings.timezones !== undefined)
@@ -61,7 +60,11 @@ Item {
     root.clockPanel.persistSettings({ timezones: Model.normalizeZones(values) })
   }
 
-  onTimezonesChanged: if (timesProcess) root.refreshTimes()
+  onTimezonesChanged: {
+    if (JSON.stringify(zonePicker.values) !== JSON.stringify(root.timezones))
+      zonePicker.values = root.timezones.slice()
+    if (timesProcess) root.refreshTimes()
+  }
 
   SystemClock {
     id: clock
@@ -88,14 +91,37 @@ Item {
     width: parent.width
     spacing: Style.space(8)
 
-    PanelSectionHeader {
-      text: "TIME ZONES"
-      foreground: root.foreground
+    Item {
+      width: parent.width
+      height: Math.max(headerLabel.implicitHeight, clearButton.visible ? clearButton.implicitHeight : 0)
+
+      PanelSectionHeader {
+        id: headerLabel
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        text: "TIME ZONES"
+        foreground: root.foreground
+        fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+      }
+
+      Button {
+        id: clearButton
+        visible: root.timezones.length > 0
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        text: "Clear all"
+        fontSize: Style.font.caption
+        foreground: root.foreground
+        accent: Color.accent
+        fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+        tooltipText: "Remove every tracked timezone"
+        onClicked: root.saveTimezones([])
+      }
     }
 
     MultiSelect {
+      id: zonePicker
       width: parent.width
-      label: "Track these timezones"
       values: root.timezones
       optionsCommand: ["bash", root.pluginPath + "/list-zones.sh"]
       placeholderText: "Search timezones…"
@@ -105,6 +131,15 @@ Item {
       accent: Color.accent
       fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
       onChanged: function(values) { root.saveTimezones(values) }
+    }
+
+    Text {
+      width: parent.width
+      text: "Times update every minute · 󰑐 reloads the available zone list"
+      color: Qt.darker(root.foreground, 1.7)
+      font.family: root.bar ? root.bar.fontFamily : Style.font.family
+      font.pixelSize: Style.font.caption
+      wrapMode: Text.WordWrap
     }
 
     Column {

@@ -222,8 +222,8 @@ Panel {
         Row {
           id: panelColumns
           spacing: Style.space(18)
-          width: calendarColumn.width + (mediaColumn.visible ? spacing + mediaColumn.width : 0)
-          height: Math.max(calendarColumn.implicitHeight, mediaColumn.implicitHeight)
+          width: calendarColumn.width + spacing + sideColumn.width
+          height: Math.max(calendarColumn.implicitHeight, sideColumn.implicitHeight)
 
         Column {
           id: calendarColumn
@@ -662,10 +662,22 @@ Panel {
           }
         }
 
-        MediaSection {
-          id: mediaColumn
-          width: visible ? Style.space(340) : 0
-          bar: root.bar
+        Column {
+          id: sideColumn
+          spacing: Style.space(18)
+          width: Style.space(340)
+
+          MediaSection {
+            id: mediaColumn
+            width: parent.width
+            bar: root.bar
+          }
+
+          VitalsSection {
+            width: parent.width
+            bar: root.bar
+            clockPanel: root
+          }
         }
         }
       }
