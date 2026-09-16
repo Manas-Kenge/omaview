@@ -1,10 +1,23 @@
 .pragma library
 
+function toArray(value) {
+  if (Array.isArray(value)) return value.slice()
+  // QML property bindings can deliver settings arrays as array-like JSValue
+  // lists that fail Array.isArray (see MultiSelect.arrayFrom in the shell).
+  // Accept anything with a numeric length so persisted zones still resolve.
+  if (value && typeof value.length === "number" && typeof value !== "string") {
+    var out = []
+    for (var i = 0; i < value.length; i++) out.push(value[i])
+    return out
+  }
+  return []
+}
+
 function normalizeZones(value) {
-  if (!Array.isArray(value)) return []
+  var src = toArray(value)
   var out = []
-  for (var i = 0; i < value.length; i++) {
-    var zone = String(value[i] === undefined || value[i] === null ? "" : value[i]).trim()
+  for (var i = 0; i < src.length; i++) {
+    var zone = String(src[i] === undefined || src[i] === null ? "" : src[i]).trim()
     if (!zone || out.indexOf(zone) !== -1 || zone === "__local__") continue
     out.push(zone)
   }
