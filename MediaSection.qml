@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Services.Mpris
 import qs.Commons
 import qs.Ui
 
@@ -7,10 +8,19 @@ Item {
   id: root
 
   property var bar: null
-  readonly property var mediaService: bar && bar.shell
-    ? bar.shell.firstPartyServiceFor("omarchy.media")
-    : null
-  readonly property var sourcePlayers: mediaService ? mediaService.sourcePlayers : []
+  readonly property var players: Mpris.players ? Mpris.players.values : []
+  readonly property var sourcePlayers: {
+    var sources = []
+    for (var i = 0; i < players.length; i++) {
+      var player = players[i]
+      if (player && (player.trackTitle || player.trackArtist)) sources.push(player)
+    }
+    sources.sort(function(a, b) {
+      if (!!a.isPlaying !== !!b.isPlaying) return a.isPlaying ? -1 : 1
+      return root.playerLabel(a).localeCompare(root.playerLabel(b))
+    })
+    return sources
+  }
   readonly property color foreground: bar ? bar.foreground : Color.foreground
 
   visible: sourcePlayers.length > 0
@@ -22,6 +32,13 @@ Item {
     if (!player) return ""
     var value = player.identity || player.desktopEntry || player.dbusName || "Media"
     return String(value).replace(/^org\.mpris\.MediaPlayer2\./, "")
+  }
+
+  function togglePlaying(player) {
+    if (!player) return
+    if (player.isPlaying && player.canPause) player.pause()
+    else if (!player.isPlaying && player.canPlay) player.play()
+    else if (player.canTogglePlaying) player.togglePlaying()
   }
 
   Column {
@@ -143,8 +160,7 @@ Item {
               verticalPadding: Style.spacing.controlPaddingY
               enabled: modelData && modelData.canGoPrevious
               opacity: enabled ? 1.0 : 0.4
-              onClicked: if (root.mediaService)
-                root.mediaService.runAction("previous", false, root.mediaService.playerKey(modelData))
+              onClicked: if (modelData && modelData.canGoPrevious) modelData.previous()
             }
 
             Button {
@@ -156,8 +172,7 @@ Item {
               enabled: modelData && (modelData.canTogglePlaying
                 || modelData.canPlay || modelData.canPause)
               opacity: enabled ? 1.0 : 0.4
-              onClicked: if (root.mediaService)
-                root.mediaService.runAction("playPause", false, root.mediaService.playerKey(modelData))
+              onClicked: root.togglePlaying(modelData)
             }
 
             Button {
@@ -167,8 +182,7 @@ Item {
               verticalPadding: Style.spacing.controlPaddingY
               enabled: modelData && modelData.canGoNext
               opacity: enabled ? 1.0 : 0.4
-              onClicked: if (root.mediaService)
-                root.mediaService.runAction("next", false, root.mediaService.playerKey(modelData))
+              onClicked: if (modelData && modelData.canGoNext) modelData.next()
             }
           }
         }
